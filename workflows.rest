@@ -1,0 +1,5 @@
+GET http://localhost:3000/api/workflows/ingest-blog-articles
+
+###
+
+GET http://localhost:3000/api/workflows/ingest-youtube-videos
