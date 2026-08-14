@@ -11,6 +11,8 @@ export const serverEnv = createEnv({
     LOCAL_AI_API_KEY: z.url(),
     // Must be an embedding-capable Ollama model (e.g. nomic-embed-text), not a chat model
     MODEL_NAME: z.string().min(1),
+    // Ollama chat model used for the learning assistant (e.g. llama3.2)
+    CHAT_MODEL_NAME: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
     GOOGLE_REFRESH_TOKEN: z.string().min(1),
