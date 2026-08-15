@@ -1,5 +1,5 @@
 import { db } from "@/db/db"
-import { userSearches } from "@/db/schema"
+import { conversations, messages, userSearches } from "@/db/schema"
 import { serverEnv } from "@/data/serverEnv"
 import { eq, and, gt, count } from "drizzle-orm"
 
@@ -28,6 +28,30 @@ export async function checkRateLimit(userId: string): Promise<void> {
   if (recentCount >= maxRequests) {
     throw new RateLimitError(
       `Rate limit exceeded: you can only make ${maxRequests} searches per ${windowHours} hour${windowHours !== 1 ? "s" : ""}. Please try again later.`,
+    )
+  }
+}
+
+export async function checkChatRateLimit(userId: string): Promise<void> {
+  const maxRequests = serverEnv.RATE_LIMIT_MAX_REQUESTS
+  const windowHours = serverEnv.RATE_LIMIT_WINDOW_HOURS
+  const windowStart = new Date(Date.now() - windowHours * 60 * 60 * 1000)
+
+  const [{ count: recentCount }] = await db
+    .select({ count: count() })
+    .from(messages)
+    .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+    .where(
+      and(
+        eq(conversations.userId, userId),
+        eq(messages.role, "user"),
+        gt(messages.createdAt, windowStart),
+      ),
+    )
+
+  if (recentCount >= maxRequests) {
+    throw new RateLimitError(
+      `Rate limit exceeded: you can only send ${maxRequests} chat messages per ${windowHours} hour${windowHours !== 1 ? "s" : ""}. Please try again later.`,
     )
   }
 }
